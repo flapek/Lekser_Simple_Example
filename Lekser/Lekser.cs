@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 
 namespace Lekser
 {
@@ -9,6 +10,7 @@ namespace Lekser
         public bool IsSuccess { get; set; } = true;
         public int Index { get; set; }
         public Token ExceptionToken { get; set; }
+        public StringBuilder Number { get; set; }
 
         public Lekser()
         {
@@ -18,6 +20,7 @@ namespace Lekser
         {
             Index = 0;
             Tokens = new List<Token>();
+            Number = new StringBuilder();
             input.All(x => Compare(x.ToString()));
         }
 
@@ -31,11 +34,29 @@ namespace Lekser
                 "/" => AddToTokens(argument, TokenType.Operator),
                 "*" => AddToTokens(argument, TokenType.Operator),
                 " " => AddToTokens(argument, TokenType.WhiteChar),
-                "0" => AddToTokens(argument, TokenType.Digit),
-                string _ when "123456789".Contains(argument) => AddToTokens(argument, TokenType.Digit),
+                string _ when "0123456789".Contains(argument) => BuildNumber(argument),
                 _ => InitializeException(argument),
             };
-        private bool AddToTokens(string x, string tokenType)
+
+        private bool BuildNumber(string argument)
+        {
+            if (Tokens.Count == 0)
+            {
+                Tokens.Add(new Token(TokenType.Digit, argument, Index++));
+                return true;
+            }
+
+            var t = Tokens.Last();
+            if (t.TokenType == TokenType.Digit)
+                t.Argument = $"{t.Argument}{argument}";
+            else
+                Tokens.Add(new Token(TokenType.Digit, argument, Index++));
+
+
+            return true;
+        }
+
+        private bool AddToTokens(string x, TokenType tokenType)
         {
             Tokens.Add(new Token(tokenType, x, Index++));
             return true;
@@ -43,8 +64,16 @@ namespace Lekser
 
         private bool InitializeException(string argument)
         {
+            var fail = argument;
             IsSuccess = false;
-            ExceptionToken = new Token("Token type is unnown", argument, Index);
+            if (string.IsNullOrEmpty(Number.ToString()))
+            {
+                ExceptionToken = new Token(TokenType.Unnown, argument, Index);
+            }
+            else
+            {
+                ExceptionToken = new Token(TokenType.Unnown, Number.Append(argument).ToString(), Index);
+            }
             return false;
         }
 

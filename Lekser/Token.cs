@@ -2,11 +2,11 @@
 {
     public class Token
     {
-        public string TokenType { get; set; }
+        public TokenType TokenType { get; set; }
         public string Argument { get; set; }
         public int Index { get; set; }
 
-        public Token(string tokenType, string argument, int index)
+        public Token(TokenType tokenType, string argument, int index)
         {
             TokenType = tokenType;
             Argument = argument;
