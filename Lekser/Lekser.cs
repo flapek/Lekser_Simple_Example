@@ -8,27 +8,24 @@ namespace Lekser
     {
         public List<Token> Tokens { get; set; }
         public bool IsSuccess { get; set; } = true;
-        public int Index { get; set; }
+        public int Index { get; set; } = 0;
         public Token ExceptionToken { get; set; }
-        public StringBuilder Number { get; set; }
+        private StringBuilder exceptionString;
 
         public Lekser()
         {
+            Tokens = new List<Token>();
+            exceptionString = new StringBuilder();
         }
 
         public void Analize(string input)
-        {
-            Index = 0;
-            Tokens = new List<Token>();
-            Number = new StringBuilder();
-            input.All(x => Compare(x.ToString()));
-        }
+            => input.All(x => Compare(x.ToString()));
 
         private bool Compare(string argument)
             => argument switch
             {
-                "(" => AddToTokens(argument, TokenType.Bracket),
-                ")" => AddToTokens(argument, TokenType.Bracket),
+                "(" => AddToTokens(argument, TokenType.LeftBracket),
+                ")" => AddToTokens(argument, TokenType.RightBracket),
                 "+" => AddToTokens(argument, TokenType.Operator),
                 "-" => AddToTokens(argument, TokenType.Operator),
                 "/" => AddToTokens(argument, TokenType.Operator),
@@ -42,16 +39,18 @@ namespace Lekser
         {
             if (Tokens.Count == 0)
             {
-                Tokens.Add(new Token(TokenType.Digit, argument, Index++));
+                AddToTokens(argument, TokenType.Digit);
                 return true;
             }
 
             var t = Tokens.Last();
-            if (t.TokenType == TokenType.Digit)
+            if (t.TokenType == TokenType.Digit || t.TokenType == TokenType.Number)
+            {
                 t.Argument = $"{t.Argument}{argument}";
+                t.TokenType = TokenType.Number;
+            }
             else
-                Tokens.Add(new Token(TokenType.Digit, argument, Index++));
-
+                AddToTokens(argument, TokenType.Digit);
 
             return true;
         }
@@ -64,18 +63,12 @@ namespace Lekser
 
         private bool InitializeException(string argument)
         {
-            var fail = argument;
             IsSuccess = false;
-            if (string.IsNullOrEmpty(Number.ToString()))
-            {
+            if (string.IsNullOrEmpty(exceptionString.ToString()))
                 ExceptionToken = new Token(TokenType.Unnown, argument, Index);
-            }
             else
-            {
-                ExceptionToken = new Token(TokenType.Unnown, Number.Append(argument).ToString(), Index);
-            }
+                ExceptionToken = new Token(TokenType.Unnown, exceptionString.Append(argument).ToString(), Index);
             return false;
         }
-
     }
 }

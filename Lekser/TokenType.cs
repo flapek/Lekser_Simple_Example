@@ -3,7 +3,8 @@
     public enum TokenType
     {
         WhiteChar,
-        Bracket,
+        LeftBracket,
+        RightBracket,
         Operator,
         Number,
         Digit,
